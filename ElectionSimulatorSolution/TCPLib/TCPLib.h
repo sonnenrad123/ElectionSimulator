@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 /* funkcija za slanje najosnovnijih podataka putem tcp protokola
 	S: socket za komunikaciju
 	data: podaci za slanje
@@ -27,3 +26,11 @@ int RecvOrdinaryTCP(SOCKET s, char* data);
 	Povratna vrednost predstavlja broj poslatih/primljenih bajta
 */
 int SendIDRequestTCP(SOCKET s);
+
+/*
+* funkcija za prijem liste podataka putem tcp protokola
+* S: socket za komunikaciju
+* start: podaci za slanje
+* broj_bajta: broj bajta koje zauzima lista
+*/
+int SendListTCP(SOCKET s, char* start, int broj_bajta);

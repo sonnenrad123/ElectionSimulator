@@ -90,10 +90,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader />
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories);D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,10 +107,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader />
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories);D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,8 +124,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,8 +139,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +154,9 @@
     <ClCompile Include="ElectionBox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ListLib\ListLib.vcxproj">
+      <Project>{0c1c4593-8add-4bc3-a1e4-38ea9f1afd8b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\TCPLib\TCPLib.vcxproj">
       <Project>{a8919abe-6c1e-4af6-a6c5-c382474a4b72}</Project>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>

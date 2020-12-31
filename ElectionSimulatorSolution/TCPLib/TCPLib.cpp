@@ -54,3 +54,17 @@ int SendIDRequestTCP(SOCKET s) {
     }
 
 }
+
+int SendListTCP(SOCKET s, char* start, int broj_bajta) {
+    int iResult = send(s, start, broj_bajta,0);
+    if (iResult == SOCKET_ERROR)//ako nije uspesno poslato vrati -1
+    {
+        printf("send failed with error: %d\n", WSAGetLastError());
+        closesocket(s);
+        WSACleanup();
+        return -1;
+    }
+    else {//inace vrati broj poslatih bajta
+        return iResult;
+    }
+}

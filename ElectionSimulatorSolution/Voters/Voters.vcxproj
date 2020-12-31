@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\TCPLib;D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,6 +150,9 @@
     <ClCompile Include="Voters.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ListLib\ListLib.vcxproj">
+      <Project>{0c1c4593-8add-4bc3-a1e4-38ea9f1afd8b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\TCPLib\TCPLib.vcxproj">
       <Project>{a8919abe-6c1e-4af6-a6c5-c382474a4b72}</Project>
     </ProjectReference>
