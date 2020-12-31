@@ -11,12 +11,13 @@
 #include "TCPLib.h"
 #include "ListLib.h"
 #include <iostream>
+#include "ThreadPoolLib.h"
 using namespace std;
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT 27016
 
-CRITICAL_SECTION cs;
+/*CRITICAL_SECTION cs;
 
 #pragma pack(4)
 struct QNode {
@@ -160,11 +161,61 @@ DWORD WINAPI VoteThread(LPVOID lpParam)
 }
 
 
-
+*/
 //-------------------------------------
+bool InitializeWindowsSockets();
+
+void GoVote(int param) {
+    printf("Voter entering elections. Voter thread id = %d\n", GetCurrentThreadId());
+    if (InitializeWindowsSockets() == false)
+    {
+        return;
+    }
+    //konektuje se na server trazi id da bi glasao
+    SOCKET connectSocket = INVALID_SOCKET;
+    int iResult;
+    connectSocket = socket(AF_INET,
+        SOCK_STREAM,
+        IPPROTO_TCP);
+
+    if (connectSocket == INVALID_SOCKET)
+    {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        WSACleanup();
+        return;
+    }
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serverAddress.sin_port = htons(DEFAULT_PORT);
+
+    if (connect(connectSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+    {
+        printf("Unable to connect to server.\n");
+        closesocket(connectSocket);
+        WSACleanup();
+        return;
+    }
+    iResult = SendIDRequestTCP(connectSocket);
+    printf("Bytes Sent: %ld\n", iResult);
+
+    char* raw_data = (char*)malloc(1000);
+
+    iResult = recv(connectSocket, raw_data, 1000, 0);
+    int* size_p = (int*)raw_data;
+    printf("Size of list: %d\n", *size_p);
+    char* list_data = raw_data + 4;
+    int bytes_left = *size_p;
+    for (int i = 0; i < bytes_left; ) {
+        CVOR* c = (CVOR*)(list_data + i);
+        printf("%d:[%s]\n", c->broj_opcije, c->naziv_opcije);
+        i = i + sizeof(CVOR);
+    }
 
 
-
+    closesocket(connectSocket);
+    WSACleanup();
+}
 
 
 VOID WINAPI ThreadPoolCallBack(PTP_CALLBACK_INSTANCE instance, PVOID param)
@@ -224,10 +275,6 @@ VOID WINAPI ThreadPoolCallBack(PTP_CALLBACK_INSTANCE instance, PVOID param)
 
 int main()
 {
-    hSemaphores[0] = CreateSemaphore(0, 0, 1, NULL);
-    hSemaphores[1] = CreateSemaphore(0, 0, 1, NULL);
-    hSemaphores[2] = CreateSemaphore(0, 0, 1, NULL);
-    InitializeCriticalSection(&cs);
 
     int number_of_voters = -1;
     while (number_of_voters == -1 && number_of_voters <= 0) {
@@ -235,58 +282,17 @@ int main()
         scanf("%d", &number_of_voters);
     }
 
-    /*PTP_POOL tPool;
-    tPool = CreateThreadpool(NULL);             
+    CreatePool(3, GoVote);
+    InitializePool();
 
-    DWORD dwMaxThread = 3;  //maksimalno tri glasaca istovremeno                    
+    int cnt = 0;
     
-    SetThreadpoolThreadMaximum(tPool, dwMaxThread); 
-    SetThreadpoolThreadMinimum(tPool, 1);       
-
-    TP_CALLBACK_ENVIRON tcEnv;
-    InitializeThreadpoolEnvironment(&tcEnv);    
-    SetThreadpoolCallbackPool(&tcEnv, tPool);  
-
-    printf("The number of threads in the thread pool is: %d\n\n", dwMaxThread);
-   
-    for (int i = 0; i < number_of_voters; i++)
-    {
-        TrySubmitThreadpoolCallback(ThreadPoolCallBack, (PVOID)i, &tcEnv);
-    }*/
-
-
-    DWORD t1, t2, t3;
-    HANDLE ht1, ht2, ht3;
-    int id1 = 0;
-    int id2 = 1;
-    int id3 = 2;
-
-    ht1 = CreateThread(NULL, 0, VoteThread, (LPVOID)0, 0, &t1);
-    ht2 = CreateThread(NULL, 0, VoteThread, (LPVOID)1, 0, &t2);
-    ht3 = CreateThread(NULL, 0, VoteThread, (LPVOID)2, 0, &t3);
-    
-   
-    q.enQueue(0, ht1);
-    q.enQueue(1, ht2);
-    q.enQueue(2, ht3);
-
     for (int i = 0; i < number_of_voters; i++) {
-        QNode t = q.deQueue();
-        while (t.id == -1) {
-            t = q.deQueue();
-            Sleep(10);
-        }
-        ReleaseSemaphore(hSemaphores[t.id], 1, NULL);//thread sam sebe vraca u red
+        DoWork();
     }
 
-    
-    Sleep(100000);
-    SAFE_DELETE_HANDLE(hSemaphores[0]);
-    SAFE_DELETE_HANDLE(hSemaphores[1]);
-    SAFE_DELETE_HANDLE(hSemaphores[2]);
-    SAFE_DELETE_HANDLE(ht1);
-    SAFE_DELETE_HANDLE(ht2);
-    SAFE_DELETE_HANDLE(ht3);
+    Sleep(10000000);//za sada na ovaj nacin obezbedjujemo da se svi poslovi zavrse pre unistavanja resursa, to be updated.
+    DestroyPool();
 
     return 0;
 }

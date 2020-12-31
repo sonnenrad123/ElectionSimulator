@@ -1,4 +1,7 @@
-﻿  pch.cpp
+﻿D:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(76,5): warning : The process cannot access the file 'd:\projekti2020-2021\indprotokoli\electionsimulator\electionsimulatorsolution\listlib\debug\listlib.pch' because it is being used by another process.
+D:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(76,5): warning : The process cannot access the file 'd:\projekti2020-2021\indprotokoli\electionsimulator\electionsimulatorsolution\listlib\debug\listlib.tlog\cl.command.1.tlog' because it is being used by another process.
+D:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(76,5): warning : The process cannot access the file 'd:\projekti2020-2021\indprotokoli\electionsimulator\electionsimulatorsolution\listlib\debug\listlib.tlog\cl.read.1.tlog' because it is being used by another process.
+  pch.cpp
   ListLib.cpp
 D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib\ListLib.cpp(5,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
   ListLib.vcxproj -> D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\Debug\ListLib.lib
