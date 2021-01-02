@@ -15,9 +15,10 @@ void PosaljiListu(SOCKET s);
 
 
 
+//counter za id
+int id_counter = 0;
 
-
-
+//pokazivaci na listu opcija za glasanje
 CVOR* start = NULL;
 CVOR* trenutni = NULL;
 
@@ -184,9 +185,18 @@ int  main(void)
                         iResult = RecvOrdinaryTCP(acceptedSocket[i], recvbuf);
                         if (iResult > 0)
                         {
-                            printf("Message received from client: %s.\n", recvbuf);
-                            if (strcmp("GiveMeID", recvbuf)==0) {
+                            //printf("Message received from client: %s.\n", recvbuf);
+                            if (strcmp("GiveMeID", recvbuf)==0) {//ako je dobio zahtev da isporuci listu opcija i novogenerisan id
                                 PosaljiListu(acceptedSocket[i]);
+                            }
+                            else {//inace je u pitanju glasanje od vec identifikovanog klijenta
+                                time_t now = time(0);
+                                char* dt = ctime(&now);//daje trenutni datum i vreme u obliku stringa sa \n na kraju koji cemo ukloniti ispod radi lepseg formata
+                                if (dt[strlen(dt) - 1] == '\n')
+                                    dt[strlen(dt) - 1] = '\0';
+                                int *cidp = (int*)recvbuf;//prvo mesto je uvek id
+                                int *optselectedp = (int*)(recvbuf + 4);//drugo mesto opcija
+                                printf("[%s:]Client successfully voted. Client ID:%d\t\tSelected option: %d \n",dt,*cidp,*optselectedp);
                             }
                         }
                         else if (iResult == 0)
@@ -252,14 +262,14 @@ void InitElectionOptions() {
     add_to_end(&start, 13, "Opcija13\0");
     add_to_end(&start, 14, "Opcija14\0");
     add_to_end(&start, 15, "Opcija15\0");
-    add_to_end(&start, 16, "Opcija16\0");
+    //add_to_end(&start, 16, "Opcija16\0");
 }
 
 
 void PosaljiListu(SOCKET s) {
     int size = count_size(start);
-    printf("Vote client accepted. Sending list. Size of list: %d\n", size);
-    char* buffer = (char*)malloc(size+4);
+   // printf("Vote client accepted. Sending list. Size of list: %d\n", size);
+    char* buffer = (char*)malloc(size+8);
     char* to_free = buffer;
     char* buffer_start = buffer;
     int* duzina = (int*)buffer;
@@ -271,7 +281,12 @@ void PosaljiListu(SOCKET s) {
         buffer = buffer + sizeof(CVOR);
         temp = temp->sledeci;
     }
-    memcpy(buffer, temp, sizeof(CVOR));
-    SendListTCP(s, buffer_start, size + 4);
+    memcpy(buffer, temp, sizeof(CVOR));//dodali duzinu liste i celu listu u ovom trenutku ostaje da dodamo generisani id
+    buffer = buffer + sizeof(CVOR);
+    int* id_pointer = (int*)buffer;
+    *id_pointer = id_counter;
+    id_counter++;
+
+    SendListTCP(s, buffer_start, size + 8);
     free(to_free);
 }

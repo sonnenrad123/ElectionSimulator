@@ -70,3 +70,23 @@ int SendListTCP(SOCKET s, char* start, int broj_bajta) {
         return iResult;
     }
 }
+
+int SendVoteOptionTCP(SOCKET s,int v_id, int opt) {
+    char* data = (char*)malloc(8); //saljemo dva integera
+    int* int_data = (int*)data;
+    int_data[0] = v_id;
+    int_data[1] = opt;
+    int iResult = send(s,data, 8, 0);
+    if (iResult == SOCKET_ERROR)//ako nije uspesno poslato vrati -1
+    {
+        printf("send failed with error: %d\n", WSAGetLastError());
+        closesocket(s);
+        WSACleanup();
+        free(data);
+        return -1;
+    }
+    else {//inace vrati broj poslatih bajta
+        free(data);
+        return iResult;
+    }
+}

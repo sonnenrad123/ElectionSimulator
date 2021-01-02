@@ -57,3 +57,8 @@ void DoWork();
 * Unistava pool i oslobadja resurse
 */
 void DestroyPool();
+
+/*
+* Ceka sve tredove da zavrsi posao
+*/
+void WaitForThreadsToFinish();

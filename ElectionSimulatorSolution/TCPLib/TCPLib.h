@@ -34,3 +34,11 @@ int SendIDRequestTCP(SOCKET s);
 * broj_bajta: broj bajta koje zauzima lista
 */
 int SendListTCP(SOCKET s, char* start, int broj_bajta);
+
+/*
+* funkcija za slanje voter id-a i opcije za koju je glasao
+* S: socket za komunikaciju
+* v_id: id glasaca
+* opt: opcija za koju je glasao
+*/
+int SendVoteOptionTCP(SOCKET s, int v_id, int opt);
