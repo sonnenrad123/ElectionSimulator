@@ -1,69 +1,31 @@
 #pragma once
 #include <Windows.h>
-
+#include <stdlib.h>
 
 #pragma pack(4)
 struct QNode {
     HANDLE thread;
     int id;
     QNode* next;
-    QNode(HANDLE t, int idd)
-    {
-        thread = t;
-        id = idd;
-        next = NULL;
-    }
 };
 
+QNode* new_QNode(HANDLE t, int idd);
 
 struct Queue {
     QNode* front, * rear;
     CRITICAL_SECTION cs;
-    Queue()
-    {
-        front = rear = NULL;
-
-        InitializeCriticalSection(&cs);
-    }
-
-    void enQueue(int id, HANDLE t)
-    {
-        QNode* temp = new QNode(t, id);
-        EnterCriticalSection(&cs);
-
-        if (rear == NULL) {
-            front = rear = temp;
-            LeaveCriticalSection(&cs);
-            return;
-        }
-
-        rear->next = temp;
-        rear = temp;
-        LeaveCriticalSection(&cs);
-    }
-
-    QNode deQueue()
-    {
-
-        if (front == NULL)
-            return QNode(NULL, -1);
-
-
-        EnterCriticalSection(&cs);
-        QNode* temp = front;
-        QNode ret = *temp;
-        front = front->next;
-
-
-        if (front == NULL)
-            rear = NULL;
-
-        delete (temp);
-        LeaveCriticalSection(&cs);
-        return ret;
-    }
 
 };
+
+void enQueue(Queue* q, int id, HANDLE t);
+
+QNode deQueue(Queue* q);
+
+Queue* new_Queue();
+
+
+
+
 
 
 #pragma pack(4)

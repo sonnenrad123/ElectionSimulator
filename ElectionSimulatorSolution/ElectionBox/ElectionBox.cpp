@@ -8,7 +8,7 @@
 #define DEFAULT_PORT "27016"
 
 bool InitializeWindowsSockets();
-void InicijalizujListuOpcija();
+void InitElectionOptions();
 void PosaljiListu(SOCKET s);
 
 
@@ -23,8 +23,8 @@ CVOR* trenutni = NULL;
 
 int  main(void)
 {
-    InicijalizujListuOpcija();
-    stampaj_listu_opcija(start);
+    InitElectionOptions();
+    print_options(start);
     
 
 
@@ -236,30 +236,31 @@ bool InitializeWindowsSockets()
     return true;
 }
 
-void InicijalizujListuOpcija() {
-    inicijalizuj(&start, 1, "Opcija1\0");
-    dodaj_na_kraj(&start, 2, "Opcija2\0");
-    dodaj_na_kraj(&start, 3, "Opcija3\0");
-    dodaj_na_kraj(&start, 4, "Opcija4\0");
-    dodaj_na_kraj(&start, 5, "Opcija5\0");
-    dodaj_na_kraj(&start, 6, "Opcija6\0");
-    dodaj_na_kraj(&start, 7, "Opcija7\0");
-    dodaj_na_kraj(&start, 8, "Opcija8\0");
-    dodaj_na_kraj(&start, 9, "Opcija9\0");
-    dodaj_na_kraj(&start, 10, "Opcija10\0");
-    dodaj_na_kraj(&start, 11, "Opcija11\0");
-    dodaj_na_kraj(&start, 12, "Opcija12\0");
-    dodaj_na_kraj(&start, 13, "Opcija13\0");
-    dodaj_na_kraj(&start, 14, "Opcija14\0");
-    dodaj_na_kraj(&start, 15, "Opcija15\0");
-    dodaj_na_kraj(&start, 16, "Opcija16\0");
+void InitElectionOptions() {
+    init(&start, 1, "Opcija1\0");
+    add_to_end(&start, 2, "Opcija2\0");
+    add_to_end(&start, 3, "Opcija3\0");
+    add_to_end(&start, 4, "Opcija4\0");
+    add_to_end(&start, 5, "Opcija5\0");
+    add_to_end(&start, 6, "Opcija6\0");
+    add_to_end(&start, 7, "Opcija7\0");
+    add_to_end(&start, 8, "Opcija8\0");
+    add_to_end(&start, 9, "Opcija9\0");
+    add_to_end(&start, 10, "Opcija10\0");
+    add_to_end(&start, 11, "Opcija11\0");
+    add_to_end(&start, 12, "Opcija12\0");
+    add_to_end(&start, 13, "Opcija13\0");
+    add_to_end(&start, 14, "Opcija14\0");
+    add_to_end(&start, 15, "Opcija15\0");
+    add_to_end(&start, 16, "Opcija16\0");
 }
 
 
 void PosaljiListu(SOCKET s) {
-    int size = izracunaj_zauzece(start);
+    int size = count_size(start);
     printf("Vote client accepted. Sending list. Size of list: %d\n", size);
     char* buffer = (char*)malloc(size+4);
+    char* to_free = buffer;
     char* buffer_start = buffer;
     int* duzina = (int*)buffer;
     *duzina = size;
@@ -272,4 +273,5 @@ void PosaljiListu(SOCKET s) {
     }
     memcpy(buffer, temp, sizeof(CVOR));
     SendListTCP(s, buffer_start, size + 4);
+    free(to_free);
 }

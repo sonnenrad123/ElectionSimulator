@@ -47,9 +47,11 @@ int SendIDRequestTCP(SOCKET s) {
         printf("send failed with error: %d\n", WSAGetLastError());
         closesocket(s);
         WSACleanup();
+        free(messageToSend);
         return -1;
     }
     else {//inace vrati broj poslatih bajta
+        free(messageToSend);
         return iResult;
     }
 

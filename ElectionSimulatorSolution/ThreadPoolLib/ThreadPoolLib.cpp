@@ -4,7 +4,65 @@
 #include "pch.h"
 #include "ThreadPoolLib.h"
 #include "framework.h"
-#include <stdlib.h>
+
+QNode* new_QNode(HANDLE t, int idd) {
+	QNode* new_object = (QNode*)malloc(sizeof(QNode));
+	new_object->thread = t;
+	new_object->id = idd;
+	new_object->next = NULL;
+	return new_object;
+}
+
+void enQueue(Queue* q, int id, HANDLE t)
+{
+	QNode* temp = new_QNode(t, id);
+	EnterCriticalSection(&q->cs);
+
+	if (q->rear == NULL) {
+		q->front = q->rear = temp;
+		LeaveCriticalSection(&q->cs);
+		return;
+	}
+
+	q->rear->next = temp;
+	q->rear = temp;
+	LeaveCriticalSection(&q->cs);
+}
+
+
+QNode deQueue(Queue* q)
+{
+
+	if (q->front == NULL) {
+		QNode* ret_empty_pointer = new_QNode(NULL, -1);
+		QNode ret_empty = *ret_empty_pointer;
+		free(ret_empty_pointer);
+		return ret_empty;
+	}
+
+
+	EnterCriticalSection(&q->cs);
+	QNode* temp = q->front;
+	QNode ret = *temp;
+	q->front = q->front->next;
+
+
+	if (q->front == NULL)
+		q->rear = NULL;
+
+	free(temp);
+	LeaveCriticalSection(&q->cs);
+	return ret;
+}
+
+
+Queue* new_Queue() {
+	Queue* new_object = (Queue*)malloc(sizeof(Queue));
+	new_object->front = NULL;
+	new_object->rear = NULL;
+	InitializeCriticalSection(&(new_object->cs));
+	return new_object;
+}
 
 threadpool* pool;
 DWORD* t;
@@ -26,7 +84,8 @@ DWORD WINAPI Worker(LPVOID lpParam) {
 		work_count = work_count--;
 		LeaveCriticalSection(&work_cnt_sec);
 		//sada vrati sebe u red
-		pool->threads_q.enQueue(id, GetCurrentThread);
+		//pool->threads_q.enQueue(id, GetCurrentThread);
+		enQueue(&(pool->threads_q), id, GetCurrentThread());
 		Sleep(100);
 	}
 }
@@ -34,10 +93,10 @@ DWORD WINAPI Worker(LPVOID lpParam) {
 threadpool* CreatePool(int numt, void (*f)(int)) {
 	int i = numt;
 	tcount = numt;
-	Queue q;
+	Queue* q = new_Queue();
 	threadpool* tp = (threadpool*)malloc(sizeof(threadpool));
 	tp->number_of_threads = numt;
-	tp->threads_q = q;
+	tp->threads_q = *q;
 	for (int i = 0; i < numt; i++) {//initialize semaphores
 		tp->semaphores[i] = CreateSemaphore(0, 0, 1, NULL);
 	}
@@ -47,18 +106,21 @@ threadpool* CreatePool(int numt, void (*f)(int)) {
 	task = f;
 	for (int i = 0; i < numt; i++) {
 		h[i] = CreateThread(NULL, 0, Worker, (LPVOID)i, 0, &(t[i]));
-		pool->threads_q.enQueue(i, h[i]);
+		//pool->threads_q.enQueue(i, h[i]);
+		enQueue(&(pool->threads_q), i, h[i]);
 	}
+	free(q);
 	return NULL;
 }
 
-DWORD WINAPI CheckFOrWOrk(LPVOID lpParam) //will check for work when semaphore indicates there is new work to do
+DWORD WINAPI CheckFOrWOrk(LPVOID lpParam) //proverice posao kada dobije signal da postoji mogucnost da ima taskova neresenih
 {
 	while (true) {
 		WaitForSingleObject(tasksem, INFINITE);
-		QNode t = pool->threads_q.deQueue();//ima posla uzimamo tred
+		//QNode t = pool->threads_q.deQueue();//ima posla uzimamo tred
+		QNode t = deQueue(&(pool->threads_q));//ima posla uzimamo tred
 		while (t.id == -1) {//ako trenutno nema slobodnih pokusavaj stalno dok ne bude prvi slobodan tred
-			t = pool->threads_q.deQueue();
+			t = deQueue(&(pool->threads_q));
 			Sleep(100);
 		}
 		ReleaseSemaphore(pool->semaphores[t.id], 1, NULL); //nasli slobodan neka obavi posao
@@ -86,11 +148,15 @@ void DoWork() {
 
 void DestroyPool() {
 	CloseHandle(wchandle);
+	QNode qn = deQueue(&(pool->threads_q));
+	while (qn.id != -1) {
+		qn = deQueue(&(pool->threads_q));
+	}
 	for (int i = 0; i < tcount; i++) {
 		CloseHandle(pool->semaphores[i]);
 		CloseHandle(h[i]);
 	}
-	delete(t);
-	delete(h);
-	delete(pool);
+	free(t);
+	free(h);
+	free(pool);
 }

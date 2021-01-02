@@ -14,7 +14,7 @@ void* safe_malloc(size_t n)
     return p;
 }
 
-void stampaj_listu_opcija(CVOR* start) {
+void print_options(CVOR* start) {
     CVOR* temp = start;
     while (temp->sledeci != NULL) {
         printf("%d: [%s] \n", temp->broj_opcije, temp->naziv_opcije);
@@ -24,7 +24,7 @@ void stampaj_listu_opcija(CVOR* start) {
 }
 
 
-void inicijalizuj(CVOR** start,int broj_opcije,const char* naziv_opcije) {
+void init(CVOR** start,int broj_opcije,const char* naziv_opcije) {
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
     strcpy_s(c->naziv_opcije, naziv_opcije);
@@ -33,7 +33,7 @@ void inicijalizuj(CVOR** start,int broj_opcije,const char* naziv_opcije) {
     *start = c;
 }
 
-void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t time) {
+void init(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t time) {
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
     strcpy_s(c->naziv_opcije, naziv_opcije);
@@ -43,7 +43,7 @@ void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t
     *start = c;
 }
 
-void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije) {
+void add_to_start(CVOR** start, int broj_opcije, char* naziv_opcije) {
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
     c->vreme_glasanja = NULL;
@@ -53,7 +53,7 @@ void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije) {
     *start = c;
 }
 
-void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time) {
+void add_to_start(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time) {
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
     c->vreme_glasanja = time;
@@ -62,7 +62,7 @@ void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije, time_t 
     *start = c;
 }
 
-void dodaj_na_kraj(CVOR** start, int broj_opcije, char* naziv_opcije) {
+void add_to_end(CVOR** start, int broj_opcije, char* naziv_opcije) {
     CVOR* temp;
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
@@ -77,7 +77,7 @@ void dodaj_na_kraj(CVOR** start, int broj_opcije, char* naziv_opcije) {
 
 }
 
-void dodaj_na_kraj(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time) {
+void add_to_end(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time) {
     CVOR* temp;
     CVOR* c = (CVOR*)safe_malloc(sizeof(CVOR));
     c->broj_opcije = broj_opcije;
@@ -91,7 +91,7 @@ void dodaj_na_kraj(CVOR** start, int broj_opcije, char* naziv_opcije, time_t tim
     c->sledeci = NULL;
 }
 
-int izracunaj_zauzece(CVOR* start) {
+int count_size(CVOR* start) {
     int size = 0;
     CVOR* temp = start;
     while (temp->sledeci != NULL) {
@@ -101,3 +101,5 @@ int izracunaj_zauzece(CVOR* start) {
     size = size + sizeof(CVOR);
     return size;
 }
+
+//TODO: Unistavanje liste radi prevencije curenja memorije

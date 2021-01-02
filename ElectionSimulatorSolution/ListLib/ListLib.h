@@ -18,7 +18,7 @@ typedef struct cvor_st {
 /*
 * Stampa broj opcije i naziv opcije
 */
-void stampaj_listu_opcija(CVOR* start);
+void print_options(CVOR* start);
 
 /*
 * Inicijalizacija liste bez vremena glasanja
@@ -26,7 +26,7 @@ void stampaj_listu_opcija(CVOR* start);
 * broj_opcije - broj opcije na listicu
 * naziv_opcije - naziv opcije na listicu
 */
-void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije);
+void init(CVOR** start, int broj_opcije,const char* naziv_opcije);
 /*
 * Inicijalizacija sa vremenom glasanja
 * start - pocetni cvor liste
@@ -34,7 +34,7 @@ void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije);
 * naziv_opcije - naziv opcije na listicu
 * time - vreme glasanja
 */
-void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t time);
+void init(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t time);
 
 /*
 * Dodavanje na pocetak liste bez vremena glasanja
@@ -42,7 +42,7 @@ void inicijalizuj(CVOR** start, int broj_opcije,const char* naziv_opcije, time_t
 * broj_opcije - broj opcije na listicu
 * naziv_opcije - naziv opcije na listicu
 */
-void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije);
+void add_to_start(CVOR** start, int broj_opcije, char* naziv_opcije);
 
 /*
 * Dodavanje na pocetak liste sa vremenom glasanja
@@ -51,14 +51,14 @@ void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije);
 * naziv_opcije - naziv opcije na listicu
 * time - vreme glasanja
 */
-void dodaj_na_pocetak(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time);
+void add_to_start(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time);
 
 /*Dodavanje na kraj liste bez vremena glasanja
 * start - pocetni cvor liste
 * broj_opcije - broj opcije na listicu
 * naziv_opcije - naziv opcije na listicu
 */
-void dodaj_na_kraj(CVOR * *start, int broj_opcije, char* naziv_opcije);
+void add_to_end(CVOR * *start, int broj_opcije, char* naziv_opcije);
 
 /*
 * Dodavanje na kraj liste sa vremenom glasanja
@@ -67,12 +67,12 @@ void dodaj_na_kraj(CVOR * *start, int broj_opcije, char* naziv_opcije);
 * naziv_opcije - naziv opcije na listicu
 * time - vreme glasanja
 */
-void dodaj_na_kraj(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time);
+void add_to_end(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time);
 
 /*
 * Vraca memorijsku velicinu liste da bi znali koliko je zauzece fajlova koje saljemo kroz socket
 */
-int izracunaj_zauzece(CVOR* start);
+int count_size(CVOR* start);
 
 /*
 * Potrebno implementirati ciscenje memorije. Videce vec neko od nas dvojice komentar
