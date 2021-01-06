@@ -130,7 +130,7 @@ DWORD WINAPI CheckFOrWOrk(LPVOID lpParam) //proverice posao kada dobije signal d
 }
 
 void InitializePool() {
-	tasksem = CreateSemaphore(0,0, 1, NULL);
+	tasksem = CreateSemaphore(0,0, 100000, NULL); //maksimalno se moze zadati 100 000 poslova u veoma malom vremenskom intervalu
 	wchandle = CreateThread(NULL, 0, CheckFOrWOrk, (LPVOID)0, 0, &(work_check));
 	InitializeCriticalSection(&work_cnt_sec);
 }
@@ -145,22 +145,18 @@ void DoWork() {
 	work_count = work_count++;
 	//printf("%d\n", work_count);
 	LeaveCriticalSection(&work_cnt_sec);
-	ReleaseSemaphore(tasksem, 1, NULL);//obavestimo semafor da ima razloga za proveru za poslom
+	ReleaseSemaphore(tasksem, 1, NULL);//povecamo semafor za jedan jer je pristigao novi posao
 	Sleep(50);
 }
 
 void WaitForThreadsToFinish() {
 	/*
-		Ovde je bio bug. Bez ove funkcije moguce je bilo pozvati u mainu mnogo puta vise DoWork pre nego tredovi odrade posao i onda work_count ostaje veci od nule ali se nikad ne release-uje
-		semafor za check for work koji uzima tred kada je slobodan i daje mu posao. Tako da ostaje zadanih taskova koji se nikada ne zavrse a main nastavi dalje.
-		Na ovaj nacin smo obezbedili da kada se pozove i poslednji DoWork a ima preostalog nagomilanog posla prvo obavi se nagomilani posao
-		a onda krene sa daljim izvrsenjem posla.
+		Ceka da se odrade svi poslovi.
 	*/
-	while (work_count > 0) {
-		ReleaseSemaphore(tasksem, 1, NULL);//obavestimo semafor da ima razloga za proveru za poslom
-		Sleep(200);
+	while (work_count > 0) { //na svakih pola sekunde proveri ima li jos posla
+		Sleep(500);
 	}
-	Sleep(100);
+	Sleep(500);
 }
 
 void DestroyPool() {
