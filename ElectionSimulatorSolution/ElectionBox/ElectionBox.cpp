@@ -1,19 +1,41 @@
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
+
+
+
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#define WIN32_LEAN_AND_MEAN
+#define _CRT_SECURE_NO_WARNINGS
+
+
+#include <windows.h>
+#include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "TCPLib.h"
-#include "ListLib.h"
+#include <conio.h>
+#include "../TCPLib/TCPLib.h"
+#include "../ListLib/ListLib.h"
+#include "../ThreadPoolLib/ThreadPoolLib.h"
+#include <process.h>
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27016"
+#define DEFAULT_COUNTERS 5
+#define DEFAULT_COUNTER_PORT 29001
+
 
 bool InitializeWindowsSockets();
 void InitElectionOptions();
 void PosaljiListu(SOCKET s);
+void PackAndSend(SOCKET s);
+void SendVotes(int param);
 
-
-
-
+CRITICAL_SECTION PORT_NUM, SHARED_NODE, FIRST_THREAD, ALL_VOTES;
+int port_number = -1;
+bool firstThread = true;
 
 //counter za id
 int id_counter = 0;
@@ -22,11 +44,18 @@ int id_counter = 0;
 CVOR* start = NULL;
 CVOR* trenutni = NULL;
 
+//pokazivac na listu predatih glasova
+CVOR* startVote = NULL;
+CVOR* sharedNode = NULL;
+
+//niz sa prebrojanim glasovima
+int* allVotes = NULL;
+int allVotesCount = 0;
+
 int  main(void)
 {
     InitElectionOptions();
     print_options(start);
-    
 
 
     //Prvi deo server aplikacije prijem glasaca i njihovih glasova
@@ -129,12 +158,23 @@ int  main(void)
     /*--------------------------*/
 
 
-
+    
     printf("Server ElectionBox initialized, waiting for clients to ask for ID and Vote.\n");
-
+    clock_t timeStart = clock();
+    bool firstVote = true;
+    char nazivOpcije[7] = "Opcija";
+    char charOpcija[3];
+    char konkretnaOpcija[9];
     do
     {
         FD_ZERO(&readfds);
+        
+        clock_t timeStop = clock();
+        int duration = (int)(timeStop - timeStart) / CLOCKS_PER_SEC;
+        //da li je isteklo vreme glasanja?
+        if (duration >= 300)
+           break;
+
         //dodamo listen u set
         FD_SET(listenSocket, &readfds);
         //ako se neko vec konektovao dodajemo i acceptedsocket njegov u set
@@ -197,6 +237,17 @@ int  main(void)
                                 int *cidp = (int*)recvbuf;//prvo mesto je uvek id
                                 int *optselectedp = (int*)(recvbuf + 4);//drugo mesto opcija
                                 printf("[%s:]Client successfully voted. Client ID:%d\t\tSelected option: %d \n",dt,*cidp,*optselectedp);
+                                konkretnaOpcija[0] = '\0';
+                                _itoa(*optselectedp, charOpcija, 10);
+                                strcat(konkretnaOpcija, nazivOpcije);
+                                strcat(konkretnaOpcija, charOpcija);
+                                if (firstVote) {
+                                    firstVote = false;                                  
+                                    init(&startVote, *optselectedp, konkretnaOpcija, now);
+                                }
+                                else {
+                                    add_to_start(&startVote, *optselectedp, konkretnaOpcija, now);
+                                }
                             }
                         }
                         else if (iResult == 0)
@@ -211,8 +262,6 @@ int  main(void)
                 }
             }
 
-
-
         }
 
         /*if (acceptedSocket != INVALID_SOCKET) {
@@ -225,13 +274,56 @@ int  main(void)
     } while (1);
 
     // dalje potrebno ocistiti sve od gore i preci na komunikaciju sa brojacima i td...
-
     // cleanup
+    for (int i = 0; i < 3; i++) {
+        closesocket(acceptedSocket[i]);
+    }
     closesocket(listenSocket);
     WSACleanup();
 
-    return 0;
+    char appName[20] = "start Counters.exe ";
+    char portString[6];
+    char runCounter[25];
 
+    for (int i = 0; i < DEFAULT_COUNTERS; i++) {
+        runCounter[0] = '\0';
+        _itoa(DEFAULT_COUNTER_PORT+i, portString, 10);
+        strcat(runCounter, appName);
+        strcat(runCounter, portString);
+        printf("Starting counter application...\n");
+        system(runCounter);
+    }
+
+    InitializeCriticalSection(&PORT_NUM);
+    InitializeCriticalSection(&SHARED_NODE);
+    InitializeCriticalSection(&FIRST_THREAD);
+    InitializeCriticalSection(&ALL_VOTES);
+
+    CreatePool(DEFAULT_COUNTERS, SendVotes);
+    InitializePool();
+
+    for (int i = 0; i < DEFAULT_COUNTERS; i++) {
+        DoWork();
+    }
+    printf("All done. Waiting for counters to finish.\n");
+
+    WaitForThreadsToFinish();
+    DestroyPool();
+    DeleteCriticalSection(&PORT_NUM);
+    DeleteCriticalSection(&SHARED_NODE);
+    DeleteCriticalSection(&FIRST_THREAD);
+    DeleteCriticalSection(&ALL_VOTES);
+
+    printf("Counted votes for: \n");
+    for (int i = 0; i < allVotesCount; i++) {
+        printf("Option: %d, Votes: %d\n", i + 1, allVotes[i]);
+    }
+
+    _CrtDumpMemoryLeaks();//detektuje memory leak ako postoji
+
+    getchar();
+
+    return 0;
 }
 
 bool InitializeWindowsSockets()
@@ -263,6 +355,12 @@ void InitElectionOptions() {
     add_to_end(&start, 14, "Opcija14\0");
     add_to_end(&start, 15, "Opcija15\0");
     //add_to_end(&start, 16, "Opcija16\0");
+
+    allVotesCount = count_size(start) / sizeof(CVOR);
+    allVotes = (int*)malloc(allVotesCount*sizeof(int));
+    for (int i = 0; i < allVotesCount; i++) {
+        allVotes[i] = 0;
+    }
 }
 
 
@@ -289,4 +387,124 @@ void PosaljiListu(SOCKET s) {
 
     SendListTCP(s, buffer_start, size + 8);
     free(to_free);
+}
+
+void PackAndSend(SOCKET s) {
+    int voteOptions = count_size(start) / sizeof(CVOR); //broj mogucih opcija za glasanje
+
+    int voteCount = count_size(startVote) / sizeof(CVOR); //broj glasova
+    int voteCountForOneThread = voteCount / DEFAULT_COUNTERS;
+    int spareVotes = voteCount % DEFAULT_COUNTERS;
+
+    EnterCriticalSection(&FIRST_THREAD);
+    if (firstThread) {
+        firstThread = false;
+        voteCountForOneThread += spareVotes;
+        sharedNode = startVote;
+    }
+    LeaveCriticalSection(&FIRST_THREAD);
+
+    if (voteCountForOneThread == 0)
+        return;
+
+    //izracunavamo koliko je potrebno bajtova memorije inicijalizovati pre slanja
+    int sizeOfArray = (voteCountForOneThread + 2) * sizeof(int);
+
+    char* bufferToSend = (char*)malloc(sizeOfArray);
+    char* to_free = bufferToSend;
+    char* buffer_start = bufferToSend;
+
+    //na prvom mestu u bufferu upisi broj glasova
+    int* params = (int*)bufferToSend;
+    *params = htonl(voteCountForOneThread);
+    bufferToSend = bufferToSend + sizeof(int);
+
+    //na drugom mestu u bufferu upisi broj mogucih opcija
+    params = (int*)bufferToSend;
+    *params = htonl(voteOptions);
+    bufferToSend = bufferToSend + sizeof(int);
+
+    EnterCriticalSection(&SHARED_NODE);
+    while (sharedNode->sledeci != NULL) {
+        params = (int*)bufferToSend;
+        *params = htonl(sharedNode->broj_opcije);
+        bufferToSend = bufferToSend + sizeof(int);
+        sharedNode = sharedNode->sledeci;
+        if (--voteCountForOneThread == 0)
+            break;
+    }
+    if (sharedNode->sledeci == NULL) {
+        params = (int*)bufferToSend;
+        *params = htonl(sharedNode->broj_opcije);
+    }
+    LeaveCriticalSection(&SHARED_NODE);
+
+    int iResult = SendOrdinaryTCP(s, buffer_start, sizeOfArray);
+
+    char recvbuf[DEFAULT_BUFLEN];
+    int* temp = NULL;
+
+        iResult = recv(s, recvbuf, DEFAULT_BUFLEN, 0);
+
+        temp = (int*)recvbuf;
+        if (iResult > 0) {
+            for (int i = 0; i < voteOptions; i++) {
+                EnterCriticalSection(&ALL_VOTES);
+                allVotes[i] += ntohl(*temp); //zbrajanje svih glasova
+                LeaveCriticalSection(&ALL_VOTES);
+                temp = temp + 1;
+            }
+        }
+
+    free(to_free);
+}
+
+void SendVotes(int param) 
+{
+    // socket used to communicate with server
+    SOCKET connectSocket = INVALID_SOCKET;
+
+    if (InitializeWindowsSockets() == false)
+    {
+        // we won't log anything since it will be logged
+        // by InitializeWindowsSockets() function
+        return;
+    }
+
+    // create a socket
+    connectSocket = socket(AF_INET,
+        SOCK_STREAM,
+        IPPROTO_TCP);
+
+    if (connectSocket == INVALID_SOCKET)
+    {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        WSACleanup();
+        return;
+    }
+
+    EnterCriticalSection(&PORT_NUM);
+    port_number = port_number + 1;
+    LeaveCriticalSection(&PORT_NUM);
+
+    // create and initialize address structure
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serverAddress.sin_port = htons(DEFAULT_COUNTER_PORT+port_number);
+    // connect to server specified in serverAddress and socket connectSocket
+    if (connect(connectSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+    {
+        printf("Unable to connect to server.\n");
+        closesocket(connectSocket);
+        WSACleanup();
+    }
+
+    PackAndSend(connectSocket);
+
+    // cleanup
+    closesocket(connectSocket);
+    WSACleanup();
+
+    return;
 }

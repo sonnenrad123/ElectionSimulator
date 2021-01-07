@@ -17,10 +17,10 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #include <conio.h>
-#include "TCPLib.h"
-#include "ListLib.h"
+#include "../TCPLib/TCPLib.h"
+#include "../ListLib/ListLib.h"
 #include <iostream>
-#include "ThreadPoolLib.h"
+#include "../ThreadPoolLib/ThreadPoolLib.h"
 #include <time.h>
 
 using namespace std;

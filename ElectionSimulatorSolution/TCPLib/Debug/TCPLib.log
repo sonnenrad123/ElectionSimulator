@@ -1,1 +1,3 @@
-﻿  TCPLib.vcxproj -> D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\Debug\TCPLib.lib
+﻿  pch.cpp
+  TCPLib.cpp
+  TCPLib.vcxproj -> D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Debug\TCPLib.lib
