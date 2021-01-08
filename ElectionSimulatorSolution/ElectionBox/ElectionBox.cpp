@@ -32,6 +32,7 @@ void InitElectionOptions();
 void PosaljiListu(SOCKET s);
 void PackAndSend(SOCKET s);
 void SendVotes(int param);
+void SendToInfoServer();
 
 CRITICAL_SECTION PORT_NUM, SHARED_NODE, FIRST_THREAD, ALL_VOTES;
 int port_number = -1;
@@ -157,9 +158,13 @@ int  main(void)
     timeVal.tv_usec = 0;
     /*--------------------------*/
 
-
+    int workTime = 0;
+    printf("Enter work time of ElectionBox in seconds: ");
+    scanf_s("%d", &workTime);
+    getchar();
     
-    printf("Server ElectionBox initialized, waiting for clients to ask for ID and Vote.\n");
+    
+    printf("\nServer ElectionBox initialized, waiting for clients to ask for ID and Vote.\n");
     clock_t timeStart = clock();
     bool firstVote = true;
     char nazivOpcije[7] = "Opcija";
@@ -172,7 +177,7 @@ int  main(void)
         clock_t timeStop = clock();
         int duration = (int)(timeStop - timeStart) / CLOCKS_PER_SEC;
         //da li je isteklo vreme glasanja?
-        if (duration >= 300)
+        if (duration >= workTime)
            break;
 
         //dodamo listen u set
@@ -305,7 +310,7 @@ int  main(void)
     for (int i = 0; i < DEFAULT_COUNTERS; i++) {
         DoWork();
     }
-    printf("All done. Waiting for counters to finish.\n");
+    printf("Waiting for counters to finish...\n");
 
     WaitForThreadsToFinish();
     DestroyPool();
@@ -314,13 +319,16 @@ int  main(void)
     DeleteCriticalSection(&FIRST_THREAD);
     DeleteCriticalSection(&ALL_VOTES);
 
-    printf("Counted votes for: \n");
-    for (int i = 0; i < allVotesCount; i++) {
-        printf("Option: %d, Votes: %d\n", i + 1, allVotes[i]);
-    }
+    /*for (int i = 0; i < allVotesCount; i++) {
+     printf("Option: %d, Votes: %d\n", i + 1, allVotes[i]);
+    }*/
+
+    printf("Counters finished. Sending results to InfoServer...\n");
+    SendToInfoServer();
 
     _CrtDumpMemoryLeaks();//detektuje memory leak ako postoji
-
+   
+    printf("\nAll done.\n");
     getchar();
 
     return 0;
@@ -394,14 +402,19 @@ void PackAndSend(SOCKET s) {
 
     int voteCount = count_size(startVote) / sizeof(CVOR); //broj glasova
     int voteCountForOneThread = voteCount / DEFAULT_COUNTERS;
-    int spareVotes = voteCount % DEFAULT_COUNTERS;
+    static int spareVotes = voteCount % DEFAULT_COUNTERS;
 
     EnterCriticalSection(&FIRST_THREAD);
     if (firstThread) {
         firstThread = false;
-        voteCountForOneThread += spareVotes;
         sharedNode = startVote;
     }
+    if (spareVotes > 0) {
+        spareVotes--;
+        voteCountForOneThread += 1;
+    }
+
+    //printf("\tvotes: %d\n", voteCountForOneThread);
     LeaveCriticalSection(&FIRST_THREAD);
 
     if (voteCountForOneThread == 0)
@@ -411,8 +424,8 @@ void PackAndSend(SOCKET s) {
     int sizeOfArray = (voteCountForOneThread + 2) * sizeof(int);
 
     char* bufferToSend = (char*)malloc(sizeOfArray);
-    char* to_free = bufferToSend;
     char* buffer_start = bufferToSend;
+    char* to_free = bufferToSend;
 
     //na prvom mestu u bufferu upisi broj glasova
     int* params = (int*)bufferToSend;
@@ -425,6 +438,7 @@ void PackAndSend(SOCKET s) {
     bufferToSend = bufferToSend + sizeof(int);
 
     EnterCriticalSection(&SHARED_NODE);
+    //printf("\tsize: %d\n", sizeOfArray);
     while (sharedNode->sledeci != NULL) {
         params = (int*)bufferToSend;
         *params = htonl(sharedNode->broj_opcije);
@@ -433,9 +447,10 @@ void PackAndSend(SOCKET s) {
         if (--voteCountForOneThread == 0)
             break;
     }
-    if (sharedNode->sledeci == NULL) {
+    if (sharedNode->sledeci == NULL && voteCountForOneThread == 1) {
         params = (int*)bufferToSend;
         *params = htonl(sharedNode->broj_opcije);
+        //printf("\tOnly one print here!\n");
     }
     LeaveCriticalSection(&SHARED_NODE);
 
@@ -444,22 +459,23 @@ void PackAndSend(SOCKET s) {
     char recvbuf[DEFAULT_BUFLEN];
     int* temp = NULL;
 
-        iResult = recv(s, recvbuf, DEFAULT_BUFLEN, 0);
+    iResult = recv(s, recvbuf, DEFAULT_BUFLEN, 0);
 
-        temp = (int*)recvbuf;
-        if (iResult > 0) {
-            for (int i = 0; i < voteOptions; i++) {
-                EnterCriticalSection(&ALL_VOTES);
-                allVotes[i] += ntohl(*temp); //zbrajanje svih glasova
-                LeaveCriticalSection(&ALL_VOTES);
-                temp = temp + 1;
-            }
+    temp = (int*)recvbuf;
+    if (iResult > 0) {
+        for (int i = 0; i < voteOptions; i++) {
+            EnterCriticalSection(&ALL_VOTES);
+            allVotes[i] += ntohl(*temp); //zbrajanje svih glasova
+            LeaveCriticalSection(&ALL_VOTES);
+            temp = temp + 1;
         }
+    }
+
 
     free(to_free);
 }
 
-void SendVotes(int param) 
+void SendVotes(int param)
 {
     // socket used to communicate with server
     SOCKET connectSocket = INVALID_SOCKET;
@@ -491,7 +507,7 @@ void SendVotes(int param)
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serverAddress.sin_port = htons(DEFAULT_COUNTER_PORT+port_number);
+    serverAddress.sin_port = htons(DEFAULT_COUNTER_PORT + port_number);
     // connect to server specified in serverAddress and socket connectSocket
     if (connect(connectSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
     {
@@ -508,3 +524,64 @@ void SendVotes(int param)
 
     return;
 }
+
+void SendToInfoServer() {
+    // socket used to communicate with server
+    SOCKET connectSocket = INVALID_SOCKET;
+
+    if (InitializeWindowsSockets() == false)
+    {
+        // we won't log anything since it will be logged
+        // by InitializeWindowsSockets() function
+        return;
+    }
+
+    // create a socket
+    connectSocket = socket(AF_INET,
+        SOCK_STREAM,
+        IPPROTO_TCP);
+
+    if (connectSocket == INVALID_SOCKET)
+    {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        WSACleanup();
+        return;
+    }
+
+    // create and initialize address structure
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serverAddress.sin_port = htons(27017);
+    // connect to server specified in serverAddress and socket connectSocket
+    if (connect(connectSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+    {
+        printf("Unable to connect to server.\n");
+        closesocket(connectSocket);
+        WSACleanup();
+    }
+
+    if (allVotesCount > 0) {
+        char* buffer = (char*)malloc((allVotesCount+1) * sizeof(int));
+        char* buffer_start = buffer;
+
+        int* params = (int*)buffer;
+        *params = htonl(allVotesCount);
+        buffer = buffer + sizeof(int);
+
+        for (int i = 0; i < allVotesCount; i++) {
+            params = (int*)buffer;
+            *params = htonl(allVotes[i]);
+            buffer = buffer + sizeof(int);
+        }
+
+        SendOrdinaryTCP(connectSocket, buffer_start, (allVotesCount + 1) * sizeof(int));
+    }
+
+
+    // cleanup
+    closesocket(connectSocket);
+    WSACleanup();
+
+    return;
+};

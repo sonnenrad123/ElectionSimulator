@@ -1,3 +1,4 @@
-﻿  Voters.cpp
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(76,5): warning : The process cannot access the file 'd:\github\electionsimulator\electionsimulatorsolution\debug\voters.pdb' because it is being used by another process.
+  Voters.cpp
 D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Voters\Voters.cpp(121,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   Voters.vcxproj -> D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Debug\Voters.exe
