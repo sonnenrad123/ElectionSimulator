@@ -66,9 +66,9 @@ void GoVote(int param) {
     iResult = SendIDRequestTCP(connectSocket);
     //printf("Bytes Sent: %ld\n", iResult);
 
-    char* raw_data = (char*)malloc(1000);
+    char* raw_data = (char*)malloc(2500);
 
-    iResult = recv(connectSocket, raw_data, 1000, 0);
+    iResult = recv(connectSocket, raw_data, 2500, 0);
     int* size_p = (int*)raw_data;
     //printf("Size of list: %d\n", *size_p);
     
