@@ -156,8 +156,8 @@ int main(int argc, char* argv[])
                                 *params = htonl(arrayToProcess[i]);
                                 buffer = buffer + sizeof(int);
                             }
-                            free(to_free);
                             SendOrdinaryTCP(acceptedSocket, buffer_start, arrayCount * sizeof(int));
+                            free(to_free);
                         }
                         break;
                     }
@@ -205,8 +205,8 @@ int main(int argc, char* argv[])
     closesocket(acceptedSocket);
     WSACleanup();
     free(arrayToProcess);
-    //getchar();
-    Sleep(5000);
+    getchar();
+    //Sleep(5000);
     return 0;
 }
 
