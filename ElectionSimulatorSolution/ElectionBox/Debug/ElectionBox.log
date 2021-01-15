@@ -1,4 +1,4 @@
 ﻿  ElectionBox.cpp
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ElectionBox\ElectionBox.cpp(8,1): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ElectionBox\ElectionBox.cpp : message : see previous definition of '_CRT_SECURE_NO_WARNINGS'
-  ElectionBox.vcxproj -> D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Debug\ElectionBox.exe
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ElectionBox\ElectionBox.cpp(8,1): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ElectionBox\ElectionBox.cpp : message : see previous definition of '_CRT_SECURE_NO_WARNINGS'
+  ElectionBox.vcxproj -> D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\Debug\ElectionBox.exe

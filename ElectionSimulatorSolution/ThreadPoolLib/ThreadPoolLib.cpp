@@ -161,6 +161,8 @@ void WaitForThreadsToFinish() {
 
 void DestroyPool() {
 	CloseHandle(wchandle);
+	CloseHandle(tasksem); // OVO
+	DeleteCriticalSection(&work_cnt_sec); // OVO
 	QNode qn = deQueue(&(pool->threads_q));
 	while (qn.id != -1) {
 		qn = deQueue(&(pool->threads_q));

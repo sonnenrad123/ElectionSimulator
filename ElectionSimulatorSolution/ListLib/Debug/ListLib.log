@@ -1,3 +1,4 @@
-﻿  ListLib.cpp
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ListLib\ListLib.cpp(5,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
-  ListLib.vcxproj -> D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Debug\ListLib.lib
+﻿  pch.cpp
+  ListLib.cpp
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ListLib\ListLib.cpp(5,1): warning C4103: alignment changed after including header, may be due to missing #pragma pack(pop)
+  ListLib.vcxproj -> D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\Debug\ListLib.lib

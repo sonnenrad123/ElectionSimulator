@@ -23,7 +23,7 @@
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27016"
-#define DEFAULT_COUNTERS 67
+#define DEFAULT_COUNTERS 10
 #define DEFAULT_COUNTER_PORT 29001
 
 
@@ -242,17 +242,17 @@ int  main(void)
                                     dt[strlen(dt) - 1] = '\0';
                                 int *cidp = (int*)recvbuf;//prvo mesto je uvek id
                                 int *optselectedp = (int*)(recvbuf + 4);//drugo mesto opcija
-                                printf("[%s:]Client successfully voted. Client ID:%d\t\tSelected option: %d \n",dt,*cidp,*optselectedp);
+                                printf("[%s:]Client successfully voted. Client ID:%d\t\tSelected option: %d \n",dt,ntohl(*cidp),ntohl(*optselectedp));
                                 konkretnaOpcija[0] = '\0';
-                                _itoa(*optselectedp, charOpcija, 10);
+                                _itoa(ntohl(*optselectedp), charOpcija, 10);
                                 strcat(konkretnaOpcija, nazivOpcije);
                                 strcat(konkretnaOpcija, charOpcija);
                                 if (firstVote) {
                                     firstVote = false;                                  
-                                    init(&startVote, *optselectedp, konkretnaOpcija, now);
+                                    init(&startVote, ntohl(*optselectedp), konkretnaOpcija, now);
                                 }
                                 else {
-                                    add_to_start(&startVote, *optselectedp, konkretnaOpcija, now);
+                                    add_to_start(&startVote, ntohl(*optselectedp), konkretnaOpcija, now);
                                 }
                             }
                         }
@@ -419,18 +419,22 @@ void PosaljiListu(SOCKET s) {
     char* to_free = buffer;
     char* buffer_start = buffer;
     int* duzina = (int*)buffer;
-    *duzina = size;
+    *duzina = htonl(size);
     buffer = buffer + 4;
     CVOR* temp = start;
     while (temp->sledeci != NULL) {
-        memcpy(buffer, temp, sizeof(CVOR));
+        CVOR to_send = *temp;
+        to_send.broj_opcije = htonl(to_send.broj_opcije);
+        memcpy(buffer, &to_send, sizeof(CVOR));
         buffer = buffer + sizeof(CVOR);
         temp = temp->sledeci;
     }
-    memcpy(buffer, temp, sizeof(CVOR));//dodali duzinu liste i celu listu u ovom trenutku ostaje da dodamo generisani id
+    CVOR to_send = *temp;
+    to_send.broj_opcije = htonl(to_send.broj_opcije);
+    memcpy(buffer, &to_send, sizeof(CVOR));//dodali duzinu liste i celu listu u ovom trenutku ostaje da dodamo generisani id
     buffer = buffer + sizeof(CVOR);
     int* id_pointer = (int*)buffer;
-    *id_pointer = id_counter;
+    *id_pointer = htonl(id_counter);
     id_counter++;
 
     SendListTCP(s, buffer_start, size + 8);

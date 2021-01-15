@@ -1,5 +1,6 @@
-﻿  ThreadPoolLib.cpp
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(3): warning C4603: 'SAFE_DELETE_HANDLE': macro is not defined or definition is different after precompiled header use
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(3): message : Add macro to precompiled header instead of defining here
-D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(4): message : use of precompiled header
-  ThreadPoolLib.vcxproj -> D:\GitHub\ElectionSimulator\ElectionSimulatorSolution\Debug\ThreadPoolLib.lib
+﻿  pch.cpp
+  ThreadPoolLib.cpp
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(3): warning C4603: 'SAFE_DELETE_HANDLE': macro is not defined or definition is different after precompiled header use
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(3): message : Add macro to precompiled header instead of defining here
+D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\ThreadPoolLib\ThreadPoolLib.cpp(4): message : use of precompiled header
+  ThreadPoolLib.vcxproj -> D:\Projekti2020-2021\IndProtokoli\ElectionSimulator\ElectionSimulatorSolution\Debug\ThreadPoolLib.lib

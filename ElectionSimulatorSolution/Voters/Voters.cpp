@@ -70,10 +70,10 @@ void GoVote(int param) {
 
     iResult = recv(connectSocket, raw_data, 2500, 0);
     int* size_p = (int*)raw_data;
-    //printf("Size of list: %d\n", *size_p);
+    //printf("Size of list: %d\n", ntohl(*size_p));
     
     char* list_data = raw_data + 4;
-    int bytes_left = *size_p;//cela duzina liste primljena porukom
+    int bytes_left = ntohl(*size_p);//cela duzina liste primljena porukom
 
     int number_of_candidates = bytes_left / sizeof(CVOR); // toliko ima elemenata u listi tj opcija za glasanje da napravimo niz opcija i random izaberemo jednog kandidata
     int* options_array = (int*)malloc(number_of_candidates * 4);
@@ -83,9 +83,9 @@ void GoVote(int param) {
     //napravimo niz broja opcija da bi iz njega izabrali random opciju i glasali za nju
     for (int i = 0; i < bytes_left; ) {
         CVOR* c = (CVOR*)(list_data + i);
-        //printf("%d:[%s]\n", c->broj_opcije, c->naziv_opcije);
+        //printf("%d:[%s]\n", ntohl(c->broj_opcije), c->naziv_opcije);
 
-        options_array[opt_cnt] = c->broj_opcije;//punimo niz opcijama i na kraju samo izaberemo random element iz niza i glasamo za njega
+        options_array[opt_cnt] = ntohl(c->broj_opcije);//punimo niz opcijama i na kraju samo izaberemo random element iz niza i glasamo za njega
         opt_cnt++;
 
         i = i + sizeof(CVOR);
@@ -93,8 +93,8 @@ void GoVote(int param) {
     }
     int* id_pointer = (int*)(list_data + bytes_left);
     int selected_option_index_for_vote = GenerateRandomVoteNumber(number_of_candidates);
-    int id_to_send = *id_pointer;
-    iResult = SendVoteOptionTCP(connectSocket, id_to_send, options_array[selected_option_index_for_vote]);
+    int id_to_send = ntohl(*id_pointer);
+    iResult = SendVoteOptionTCP(connectSocket, htonl(id_to_send), htonl(options_array[selected_option_index_for_vote]));
     if (iResult == -1) {
         printf("Sending vote option failed.\n");
         free(options_array);
@@ -138,7 +138,7 @@ int main()
     
     WaitForThreadsToFinish();
     DestroyPool();
-    _CrtDumpMemoryLeaks();//detektuje memory leak ako postoji
+    //_CrtDumpMemoryLeaks();//detektuje memory leak ako postoji
     printf("All client voted.");
  
     getchar();
