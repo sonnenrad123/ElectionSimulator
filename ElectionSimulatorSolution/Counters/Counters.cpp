@@ -13,6 +13,7 @@ bool InitializeWindowsSockets();
 
 int main(int argc, char* argv[])
 {
+    //getchar();
     if (argc != 2) {
         printf("Invalid number of arguments passed!");
         exit(127);
@@ -148,13 +149,14 @@ int main(int argc, char* argv[])
                         if (arrayCount > 0) {
                             char* buffer = (char*)malloc(arrayCount * sizeof(int));
                             char* buffer_start = buffer;
+                            char* to_free = buffer;
 
                             for (int i = 0; i < arrayCount; i++) {
                                 int* params = (int*)buffer;
                                 *params = htonl(arrayToProcess[i]);
                                 buffer = buffer + sizeof(int);
                             }
-
+                            free(to_free);
                             SendOrdinaryTCP(acceptedSocket, buffer_start, arrayCount * sizeof(int));
                         }
                         break;
@@ -183,8 +185,9 @@ int main(int argc, char* argv[])
             if(arrayToProcess[i] !=0)
                 printf("Option: %d, Votes: %d\n", i + 1, arrayToProcess[i]);
         }
+        printf("Work done. Closing counter...");
         // here is where server shutdown loguc could be placed
-
+        //getchar();
    // } while (1);
 
     // shutdown the connection since we're done
@@ -201,9 +204,9 @@ int main(int argc, char* argv[])
     closesocket(listenSocket);
     closesocket(acceptedSocket);
     WSACleanup();
-
-    getchar();
-
+    free(arrayToProcess);
+    //getchar();
+    Sleep(5000);
     return 0;
 }
 

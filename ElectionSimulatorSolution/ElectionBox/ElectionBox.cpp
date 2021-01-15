@@ -54,7 +54,8 @@ int* allVotes = NULL;
 int allVotesCount = 0;
 
 int  main(void)
-{
+{   
+    //getchar();
     InitElectionOptions();
     print_options(start);
 
@@ -277,12 +278,13 @@ int  main(void)
 
 
     } while (1);
-
-    // dalje potrebno ocistiti sve od gore i preci na komunikaciju sa brojacima i td...
     // cleanup
+    FD_ZERO(&readfds);
     for (int i = 0; i < 3; i++) {
+        shutdown(acceptedSocket[i], 2);
         closesocket(acceptedSocket[i]);
     }
+    shutdown(listenSocket, 2);
     closesocket(listenSocket);
     WSACleanup();
 
@@ -298,7 +300,7 @@ int  main(void)
         printf("Starting counter application...\n");
         system(runCounter);
     }
-
+    //getchar();
     InitializeCriticalSection(&PORT_NUM);
     InitializeCriticalSection(&SHARED_NODE);
     InitializeCriticalSection(&FIRST_THREAD);
@@ -310,6 +312,7 @@ int  main(void)
     for (int i = 0; i < DEFAULT_COUNTERS; i++) {
         DoWork();
     }
+
     printf("Waiting for counters to finish...\n");
 
     WaitForThreadsToFinish();
@@ -326,11 +329,14 @@ int  main(void)
     printf("Counters finished. Sending results to InfoServer...\n");
     SendToInfoServer();
 
+    free(allVotes);
+    free_list(start);
+    free_list(startVote);
+
     _CrtDumpMemoryLeaks();//detektuje memory leak ako postoji
-   
+
     printf("\nAll done.\n");
     getchar();
-
     return 0;
 }
 
@@ -397,7 +403,6 @@ void InitElectionOptions() {
     add_to_end(&start, 48, "Opcija48\0");
     add_to_end(&start, 49, "Opcija49\0");
     add_to_end(&start, 50, "Opcija50\0");
-
 
     allVotesCount = count_size(start) / sizeof(CVOR);
     allVotes = (int*)malloc(allVotesCount*sizeof(int));
@@ -554,6 +559,7 @@ void SendVotes(int param)
     PackAndSend(connectSocket);
 
     // cleanup
+    shutdown(connectSocket, 2);
     closesocket(connectSocket);
     WSACleanup();
 
@@ -599,6 +605,7 @@ void SendToInfoServer() {
     if (allVotesCount > 0) {
         char* buffer = (char*)malloc((allVotesCount+1) * sizeof(int));
         char* buffer_start = buffer;
+        char* to_free = buffer;
 
         int* params = (int*)buffer;
         *params = htonl(allVotesCount);
@@ -611,12 +618,13 @@ void SendToInfoServer() {
         }
 
         SendOrdinaryTCP(connectSocket, buffer_start, (allVotesCount + 1) * sizeof(int));
+        free(to_free);
     }
 
 
     // cleanup
+    shutdown(connectSocket, 2);
     closesocket(connectSocket);
     WSACleanup();
-
     return;
 };

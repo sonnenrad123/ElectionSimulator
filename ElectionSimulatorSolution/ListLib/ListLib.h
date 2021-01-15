@@ -75,5 +75,7 @@ void add_to_end(CVOR** start, int broj_opcije, char* naziv_opcije, time_t time);
 int count_size(CVOR* start);
 
 /*
-* Potrebno implementirati ciscenje memorije. Videce vec neko od nas dvojice komentar
+* Oslobadjanje memorije zauzete listom.
+* head - pocetni cvor liste
 */
+void free_list(CVOR* head);

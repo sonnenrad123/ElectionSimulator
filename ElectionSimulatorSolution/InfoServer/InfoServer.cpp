@@ -9,6 +9,7 @@ bool InitializeWindowsSockets();
 
 int  main(void)
 {
+//    getchar();
     // Socket used for listening for new clients 
     SOCKET listenSocket = INVALID_SOCKET;
     // Socket used for communication with client
@@ -126,14 +127,15 @@ int  main(void)
             electionResults[opt] = -1;
         printf("(%d) - %d people voted for the number %d option\n", i+1,  max, opt+1);
     }
-
-    getchar();
+//    getchar();
 
     // cleanup
     closesocket(listenSocket);
     closesocket(acceptedSocket);
     WSACleanup();
+    free(electionResults);
 
+    getchar();
     return 0;
 }
 

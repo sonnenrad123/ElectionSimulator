@@ -102,4 +102,14 @@ int count_size(CVOR* start) {
     return size;
 }
 
-//TODO: Unistavanje liste radi prevencije curenja memorije
+void free_list(CVOR* head)
+{
+     CVOR* tmp;
+
+    while (head != NULL)
+    {
+        tmp = head;
+        head = head->sledeci;
+        free(tmp);
+    }
+}

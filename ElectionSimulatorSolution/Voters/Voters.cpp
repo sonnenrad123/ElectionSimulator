@@ -118,6 +118,8 @@ void GoVote(int param) {
 
 int main()
 {
+    //getchar();
+    
     srand(time(0));
     int number_of_voters = -1;
     while (number_of_voters == -1 && number_of_voters <= 0) {
